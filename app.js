@@ -30,6 +30,13 @@ app.get('/', (req, res) => {
 app.get('/campgrounds', async (req, res) => {
     const campgrounds = await Campground.find({}); //grab all campgrounds from DB
     res.render('campgrounds/index', { campgrounds }) //pass this into our ejs template.
+});
+
+//show route of campground details
+app.get('/campgrounds/:id', async (req, res) => {
+    const { id } = req.params; //saving id 
+    const campground = await Campground.findById(id) //searching for campground
+    res.render('campgrounds/show', { campground }); //passing to template
 })
 
 //setting up server
