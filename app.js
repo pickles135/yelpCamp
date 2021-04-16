@@ -21,20 +21,18 @@ db.once("open", () => {
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-app.listen(3000, () => {
-    console.log('APP IS LISTENING ON PORT 3000')
-});
 
 app.get('/', (req, res) => {
     res.render('home')
 });
 
-//testing Model Schema
-app.get('/makecampground', async (req, res) => {
-    const camp = new Campground({ 
-        title: 'My Backyard',
-        description: 'Ultra cheap and free camping.'
-    })
-    await camp.save();
-    res.send(camp);
+//index of all campgrounds
+app.get('/campgrounds', async (req, res) => {
+    const campgrounds = await Campground.find({}); //grab all campgrounds from DB
+    res.render('campgrounds/index', { campgrounds }) //pass this into our ejs template.
 })
+
+//setting up server
+app.listen(3000, () => {
+    console.log('APP IS LISTENING ON PORT 3000')
+});
