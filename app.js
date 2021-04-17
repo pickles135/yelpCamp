@@ -21,6 +21,8 @@ db.once("open", () => {
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
+//middleware express parser
+app.use(express.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => {
     res.render('home')
@@ -31,6 +33,18 @@ app.get('/campgrounds', async (req, res) => {
     const campgrounds = await Campground.find({}); //grab all campgrounds from DB
     res.render('campgrounds/index', { campgrounds }) //pass this into our ejs template.
 });
+
+//creating form for new campground.
+app.get('/campgrounds/new', (req, res) => {
+    res.render('campgrounds/new') //creating template called new
+});
+
+//posting form data
+app.post('/campgrounds', async (req, res) => {
+    const campground = new Campground(req.body.campground); //creating new campground from our req.body
+    await campground.save(); //saving to db.
+    res.redirect(`/campgrounds/${campground._id}`); //redirecting to show page of new campground
+})
 
 //show route of campground details
 app.get('/campgrounds/:id', async (req, res) => {
