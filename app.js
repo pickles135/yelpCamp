@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const app = express();
 const path = require('path');
+const methodOverride = require('method-override');
 const Campground = require('./models/campground');
 
 //connecting Mongoose
@@ -23,6 +24,8 @@ app.set('view engine', 'ejs');
 
 //middleware express parser
 app.use(express.urlencoded({ extended: true }));
+//method override for PUT and PATCH
+app.use(methodOverride('_method'));
 
 app.get('/', (req, res) => {
     res.render('home')
@@ -51,6 +54,20 @@ app.get('/campgrounds/:id', async (req, res) => {
     const { id } = req.params; //saving id 
     const campground = await Campground.findById(id) //searching for campground
     res.render('campgrounds/show', { campground }); //passing to template
+});
+
+//form to edit campground instance
+app.get('/campgrounds/:id/edit', async (req, res) => {
+    const { id } = req.params;  
+    const campground = await Campground.findById(id)
+    res.render('campgrounds/edit', { campground }); 
+});
+
+//submitting the Edit Form
+app.put('/campgrounds/:id', async (req, res) => {
+    const { id } = req.params;
+    const campground = await Campground.findByIdAndUpdate(id, { ...req.body.campground }); //spreading the entire campground
+    res.redirect(`/campgrounds/${campground._id}`);
 })
 
 //setting up server
