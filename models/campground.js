@@ -3,8 +3,9 @@ const Schema = mongoose.Schema; //shortcut for referencing Schema
 
 const CampgroundSchema = new Schema({
     title: String, 
-    price: String, 
-    description: String, 
+    image: String,
+    price: Number, 
+    description: String,
     location: String,
 });
 
