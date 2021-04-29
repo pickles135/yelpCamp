@@ -45,10 +45,14 @@ app.get('/campgrounds/new', (req, res) => {
 });
 
 //posting form data
-app.post('/campgrounds', async (req, res) => {
-    const campground = new Campground(req.body.campground); //creating new campground from our req.body
-    await campground.save(); //saving to db.
-    res.redirect(`/campgrounds/${campground._id}`); //redirecting to show page of new campground
+app.post('/campgrounds', async (req, res, next) => {
+    try {
+        const campground = new Campground(req.body.campground); 
+        await campground.save(); 
+        res.redirect(`/campgrounds/${campground._id}`); 
+    } catch(err) {
+        next(err);
+    }
 })
 
 //show route of campground details
@@ -77,6 +81,11 @@ app.delete('/campgrounds/:id', async (req, res) => {
     const { id } = req.params;
      await Campground.findByIdAndDelete(id);
      res.redirect('/campgrounds');
+})
+
+//error handler
+app.use((err, req, res, next) => {
+    res.send('Oh boy, something went wrong...')
 })
 
 //setting up server
