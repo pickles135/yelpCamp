@@ -8,6 +8,7 @@ const methodOverride = require('method-override');
 const { campgroundSchema } = require('./schemas.js');
 
 const Campground = require('./models/campground');
+const Review = require('./models/review');
 //utils files
 const catchAsync = require('./utils/catchAsync');
 const ExpressError = require('./utils/ExpressError');
@@ -94,6 +95,17 @@ app.delete('/campgrounds/:id', catchAsync(async (req, res) => {
     const { id } = req.params;
      await Campground.findByIdAndDelete(id);
      res.redirect('/campgrounds');
+}))
+
+//review form submit
+app.post('/campgrounds/:id/reviews', catchAsync(async(req, res) => {
+    const { id } = req.params;
+    const campground = await Campground.findById(id);
+    const review = new Review(req.body.review); //review[rating]
+    campground.reviews.push(review);
+    await review.save();
+    await campground.save();
+    res.redirect(`/campgrounds/${id}`);
 }))
 
 //bad request handler
