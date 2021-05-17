@@ -5,9 +5,10 @@ const path = require('path');
 const ejsMate = require('ejs-mate');
 const methodOverride = require('method-override');
 //JOI validation file
-const { campgroundSchema } = require('./schemas.js');
+const { campgroundSchema, reviewSchema } = require('./schemas.js');
 
 const Campground = require('./models/campground');
+const Review = require('./models/review');
 //utils files
 const catchAsync = require('./utils/catchAsync');
 const ExpressError = require('./utils/ExpressError');
@@ -46,6 +47,17 @@ const validateCampground = (req, res, next) => {
     }
 }
 
+//JOI Validator Middleware for Reviews
+const validateReview = (req, res, next) => {
+    const { error } = reviewSchema.validate(req.body);
+    if(error) {
+        const msg = error.details.map(el => el.message).join(','); //map over the error array
+        throw new ExpressError(msg, 400); 
+    } else {
+        next();
+    }
+}
+
 app.get('/', (req, res) => {
     res.render('home')
 });
@@ -70,9 +82,9 @@ app.post('/campgrounds', validateCampground, catchAsync(async (req, res, next) =
 
 //show route of campground details
 app.get('/campgrounds/:id', catchAsync(async (req, res) => {
-    const { id } = req.params; //saving id 
-    const campground = await Campground.findById(id) //searching for campground
-    res.render('campgrounds/show', { campground }); //passing to template
+    const { id } = req.params; 
+    const campground = await Campground.findById(id).populate('reviews');
+    res.render('campgrounds/show', { campground }); 
 }));
 
 //form to edit campground instance
@@ -94,6 +106,17 @@ app.delete('/campgrounds/:id', catchAsync(async (req, res) => {
     const { id } = req.params;
      await Campground.findByIdAndDelete(id);
      res.redirect('/campgrounds');
+}))
+
+//review form submit
+app.post('/campgrounds/:id/reviews', validateReview, catchAsync(async(req, res) => {
+    const { id } = req.params;
+    const campground = await Campground.findById(id);
+    const review = new Review(req.body.review); //review[rating]
+    campground.reviews.push(review);
+    await review.save();
+    await campground.save();
+    res.redirect(`/campgrounds/${id}`);
 }))
 
 //bad request handler
