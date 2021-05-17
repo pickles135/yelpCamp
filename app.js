@@ -82,9 +82,9 @@ app.post('/campgrounds', validateCampground, catchAsync(async (req, res, next) =
 
 //show route of campground details
 app.get('/campgrounds/:id', catchAsync(async (req, res) => {
-    const { id } = req.params; //saving id 
-    const campground = await Campground.findById(id) //searching for campground
-    res.render('campgrounds/show', { campground }); //passing to template
+    const { id } = req.params; 
+    const campground = await Campground.findById(id).populate('reviews');
+    res.render('campgrounds/show', { campground }); 
 }));
 
 //form to edit campground instance
