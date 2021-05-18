@@ -8,7 +8,6 @@ const methodOverride = require('method-override');
 const { campgroundSchema } = require('./schemas.js');
 
 const Campground = require('./models/campground');
-const Review = require('./models/review');
 //utils files
 const catchAsync = require('./utils/catchAsync');
 const ExpressError = require('./utils/ExpressError');
@@ -98,7 +97,7 @@ app.delete('/campgrounds/:id', catchAsync(async (req, res) => {
 }))
 
 //review form submit
-app.post('/campgrounds/:id/reviews', catchAsync(async(req, res) => {
+app.post('/campgrounds/:id/reviews', validateReview, catchAsync(async(req, res) => {
     const { id } = req.params;
     const campground = await Campground.findById(id);
     const review = new Review(req.body.review); //review[rating]
@@ -106,6 +105,14 @@ app.post('/campgrounds/:id/reviews', catchAsync(async(req, res) => {
     await review.save();
     await campground.save();
     res.redirect(`/campgrounds/${id}`);
+}))
+
+//delete a review
+app.delete('/campgrounds/:id/reviews/:reviewId', catchAsync(async (req, res) => {
+    const { id, reviewId } = req.params;
+    await Campground.findByIdAndUpdate(id, { $pull: { reviews: reviewId } }) 
+    await Review.findByIdAndDelete(reviewId);
+    res.redirect(`/campgrounds/${id}`); 
 }))
 
 //bad request handler
