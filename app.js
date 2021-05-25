@@ -4,6 +4,7 @@ const app = express();
 const path = require('path');
 const ejsMate = require('ejs-mate');
 const methodOverride = require('method-override');
+const session = require('express-session');
 
 //routes files
 const campgrounds = require('./routes/campgrounds');
@@ -38,6 +39,18 @@ app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
 //serving our public directory
 app.use(express.static(path.join(__dirname, 'public')))
+//session
+const sessionConfig = {
+    secret: 'pineapple-express',
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        httpOnly: true,
+        expires: Date.now() + 1000 * 60 * 60 * 24 * 7, //converting to milliseconds
+        maxAge: 1000 * 60 * 60 * 24 * 7
+    }
+}
+app.use(session(sessionConfig))
 
 //routes
 app.use('/campgrounds', campgrounds);
