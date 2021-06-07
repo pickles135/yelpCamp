@@ -6,6 +6,11 @@ const ejsMate = require('ejs-mate');
 const methodOverride = require('method-override');
 const session = require('express-session');
 const flash = require('connect-flash');
+const passport = require('passport');
+const LocalStrategy = require('passport-local');
+
+//User Model
+const User = require('./models/users');
 
 //routes files
 const campgrounds = require('./routes/campgrounds');
@@ -55,11 +60,30 @@ app.use(session(sessionConfig))
 //flash
 app.use(flash());
 
+//passport initialization
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate())) 
+//passport serialize
+passport.serializeUser(User.serializeUser());
+//passport deserialize
+passport.deserializeUser(User.deserializeUser());
+
 //flash middleware
 app.use((req, res, next) => {
     res.locals.success = req.flash('success');
     res.locals.error = req.flash('error') //any flash error messages
     next();
+})
+
+//hardcode User registeration
+app.get('/fakeUser', async (req, res) => {
+    const user = new User({
+        email: 'tcho135@gmail.com',
+        username: 'tcho135'
+    })
+    const newUser = await User.register(user, 'pineapple-express') //username + password.
+    res.send(newUser)
 })
 
 //routes
